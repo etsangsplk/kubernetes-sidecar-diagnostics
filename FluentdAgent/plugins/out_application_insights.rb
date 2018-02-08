@@ -58,9 +58,10 @@ module Fluent
           message = tag
         end
 
-        record = flatten_container_log_props(record)
+        props = extract_metadata(record)
 
-        @tc.track_trace message, ApplicationInsights::Channel::Contracts::SeverityLevel::INFORMATION, :properties => record
+        message = record.to_s
+        @tc.track_trace message, ApplicationInsights::Channel::Contracts::SeverityLevel::INFORMATION, :properties => props
       }
       chain.next
     end
@@ -68,20 +69,30 @@ module Fluent
     private
 
     # If we don't flatten the props, it will become [object Object] in AI telemetry
-    def flatten_container_log_props(record)
+    def extract_metadata(record)
       props = Hash.new
 
-      record.each do |key, value|
-        if key == "kubernetes" || key == "docker"
-          # TODO: handle "label" property and collision of key
-          value.each do |key2, value2|
-            props[key2] = value2
-          end
-        else
+      if(!record["docker"].nil?)
+        record["docker"].each do |key, value|
           props[key] = value
         end
       end
 
+      if(!record["kubernetes"].nil?)
+        record["kubernetes"].each do |key, value|
+          if (value.is_a?(Hash))
+            # labels and annotations
+            value.each do |key2, value2|
+              props[key + "_" + key2] = value2
+            end
+          else
+            props[key] = value
+          end
+        end
+      end
+
+      record.delete("docker")
+      record.delete("kubernetes")
       props
     end
 
