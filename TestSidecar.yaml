@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: testsidecar
+spec:
+  template:
+    metadata:
+      labels:
+        component: testsidecar
+    spec:
+      containers:
+      - name: testhttplog
+        image: yanmingacr.azurecr.io/testhttplog
+      - name: fluentdsidecar
+        image: yanmingacr.azurecr.io/fluentai
+        env:
+          - name:  SOURCE_CONTAINER_NAME
+            value: "testhttplog"
+          - name:  INSTRUMENTATION_KEY
+            value: "014dae06-98b6-4fb9-9fa4-abd84d067e9c"
+          # TODO(yantang): Minor: If we can auto generate the sidecar container definition, consider allowing passing the metadata directly through kubernetes downward api
+          # - name: POD_NAME
+          #   valueFrom:
+          #     fieldRef:
+          #       fieldPath: metadata.name
+          # - name: NAMESPACE_NAME
+          #   valueFrom:
+          #     fieldRef:
+          #       fieldPath: metadata.namespace

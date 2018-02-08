@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  testhttplog:
+    image: testhttplog
+    build:
+      context: .
+      dockerfile: TestHttpLog/Dockerfile
