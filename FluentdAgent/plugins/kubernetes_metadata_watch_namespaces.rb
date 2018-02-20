@@ -25,10 +25,7 @@ module KubernetesMetadata
 
     def start_namespace_watch
       begin
-        # resource_version = @client.get_namespaces.resourceVersion
-        # watcher          = @client.watch_namespaces(resource_version)
-        # TODO(yantang): Test whether it works...
-        watcher = @client.watch_namespaces(namespace: @namespace_name)
+        watcher = @client.watch_namespaces({:name => @namespace_name})
       rescue Exception=>e
         message = "start_namespace_watch: Exception encountered setting up namespace watch from Kubernetes API #{@apiVersion} endpoint #{@kubernetes_url}: #{e.message}"
         message += " (#{e.response})" if e.respond_to?(:response)

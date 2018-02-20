@@ -192,13 +192,12 @@ module Fluent
           raise Fluent::ConfigError, "Invalid Kubernetes API #{@apiVersion} endpoint #{@kubernetes_url}: #{kube_error.message}"
         end
 
-        # TODO(yantang): only watch for current pod
-        # if @watch
-        #   thread = Thread.new(self) { |this| this.start_pod_watch }
-        #   thread.abort_on_exception = true
-        #   namespace_thread = Thread.new(self) { |this| this.start_namespace_watch }
-        #   namespace_thread.abort_on_exception = true
-        # end
+        if @watch
+          thread = Thread.new(self) { |this| this.start_pod_watch }
+          thread.abort_on_exception = true
+          namespace_thread = Thread.new(self) { |this| this.start_namespace_watch }
+          namespace_thread.abort_on_exception = true
+        end
       end
 
       @annotations_regexps = []
@@ -216,7 +215,7 @@ module Fluent
       @pod_name = pod['metadata']['name']
       pod['status']['containerStatuses'].each do |container|
         if container['name'] == @source_container_name
-          # TODO(yantang): check if the containerID will change if it restarts
+          # TODO(yantang): check if the containerID will change if it restarts, or if it's possible the sidecar could fail to get the app container if the app container is slow to initialize
           # Drop the prefix of containerID, the format is docker://080dc8b76e049a2a910899af6238994063ad69e9567f0c20ede95c4d9699a112
           @source_container_id = container['containerID'][9..-1]
         end

@@ -25,10 +25,7 @@ module KubernetesMetadata
 
     def start_pod_watch
       begin
-        # TODO(yantang): Test whether it works...
-        # resource_version = @client.get_pods.resourceVersion
-        # watcher          = @client.watch_pods(resource_version)
-        watcher = @client.watch_pods(namespace: @namespace_name, name: @pod_name)
+        watcher = @client.watch_pods({:namespace => @namespace_name, :name => @pod_name})
       rescue Exception => e
         message = "Exception encountered fetching metadata from Kubernetes API endpoint: #{e.message}"
         message += " (#{e.response})" if e.respond_to?(:response)
