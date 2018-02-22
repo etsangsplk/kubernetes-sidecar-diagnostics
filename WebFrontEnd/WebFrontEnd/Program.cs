@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore;
@@ -15,6 +17,16 @@ namespace WebFrontEnd
     {
         public static void Main(string[] args)
         {
+            //Task.Run(() =>
+            //{
+            //    HttpClient client = new HttpClient();
+            //    while (true)
+            //    {
+            //        client.PostAsync("http://localhost:8887/sometag", new StringContent("{\"message\": \"tick from webfrontend\"}", Encoding.UTF8, "application/json"));
+            //        System.Threading.Thread.Sleep(2000);
+            //    }
+            //});
+
             BuildWebHost(args).Run();
         }
 
@@ -24,7 +36,7 @@ namespace WebFrontEnd
                 .ConfigureLogging((hostingContext, logging) =>
                 {
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddHttp();
+                    logging.AddHttp("http://localhost:8887");
                 })
                 .UseApplicationInsights()
                 .Build();

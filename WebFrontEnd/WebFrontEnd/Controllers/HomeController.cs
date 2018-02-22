@@ -31,7 +31,7 @@ namespace WebFrontEnd.Controllers
 
         public IActionResult About()
         {
-            this.logger.LogInformation("I'm ILogger message in About()...");
+            this.logger.LogWarning("I'm ILogger message in About()...");
 
             ViewData["Message"] = "Your application description page.";
 

@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webfrontend
+spec:
+  template:
+    metadata:
+      labels:
+        app: testsidecar
+        component: webfrontend
+    spec:
+      containers:
+      - name: webfrontend
+        image: yanmingacr.azurecr.io/webfrontend
+      - name: fluentdsidecar
+        image: yanmingacr.azurecr.io/fluentai
+        env:
+          - name:  SOURCE_CONTAINER_NAME
+            value: "webfrontend"
+          - name:  INSTRUMENTATION_KEY
+            value: "014dae06-98b6-4fb9-9fa4-abd84d067e9c"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: testsidecar
+    component: webfrontend
+  name: frontend
+spec:
+  ports:
+  - port: 80
+  selector:
+    app: testsidecar
+    component: webfrontend
+  type: LoadBalancer

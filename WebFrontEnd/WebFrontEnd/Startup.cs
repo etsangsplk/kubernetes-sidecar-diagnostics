@@ -50,7 +50,7 @@ namespace WebFrontEnd
             });
 
             var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
-            config.TelemetryChannel = new FluentdHttpChannel();
+            config.TelemetryChannel = new FluentdHttpChannel("http://localhost:8887");
             config.DefaultTelemetrySink.Name = "yanming";
             config.DefaultTelemetrySink.TelemetryChannel = new FluentdHttpChannel();
         }

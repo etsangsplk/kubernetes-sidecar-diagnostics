@@ -6,8 +6,10 @@ The project consist of two containers.
  2) The sidecar container is a fluentd agent listening http request, enrich the event with kubernetes metadata and send to Azure Application Insights
 
 ## Project Setup
-The images are stored in a private docker registry. To set the project up, you need to build your own images
+The images are stored in a private docker registry. To set the project up, you need to use your own images.
 1. Build docker images for the main application and sidecar app
 2. Publish the docker images
 3. Update the deployment yaml file, replace the container images with your own image, and update the Application Insights instrumentation key
-4. Run ```kubectl create -f TestSidecar.yaml``` and that's it
+4. Run ```kubectl create -f WebFrontEndSidecar.yaml``` and that's it
+
+If you have modified the yaml file and deploy.cmd file to your registry accordingly, then simply run ```deploy.cmd```.
