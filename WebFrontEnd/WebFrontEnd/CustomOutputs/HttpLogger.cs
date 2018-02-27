@@ -2,21 +2,24 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
+using Validation;
 
 namespace Microsoft.Extensions.Logging
 {
     public class HttpLogger : ILogger, IDisposable
     {
         private Uri endpoint;
+        private string categoryName;
         private HttpClient client;
 
-        public HttpLogger(Uri endpoint)
+        public HttpLogger(Uri endpoint, string categoryName, bool appendCategoryToEndpoint)
         {
-            this.endpoint = endpoint;
+            // TODO: Add log level or filter function
+
+            this.endpoint = appendCategoryToEndpoint ? new Uri(endpoint, categoryName) : endpoint;
+            this.categoryName = categoryName;
             this.client = new HttpClient();
         }
 
@@ -37,14 +40,11 @@ namespace Microsoft.Extensions.Logging
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            Requires.NotNull(formatter, nameof(formatter));
+
             if (!this.IsEnabled(logLevel))
             {
                 return;
-            }
-
-            if (formatter == null)
-            {
-                throw new ArgumentNullException("formatter");
             }
 
             var message = formatter(state, exception);
@@ -52,6 +52,7 @@ namespace Microsoft.Extensions.Logging
             if (state is FormattedLogValues)
             {
                 var formattedState = state as FormattedLogValues;
+
                 //last KV is the whole message, we will pass it separately
                 for (int i = 0; i < formattedState.Count - 1; i++)
                 {
@@ -66,6 +67,7 @@ namespace Microsoft.Extensions.Logging
                 logLevel,
                 eventId,
                 message,
+                this.categoryName,
                 properties
             };
             var jsonMessage = JsonConvert.SerializeObject(messageObject);
