@@ -13,17 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "fluent/output"
 require "application_insights"
 
 module Fluent
-  class ApplicationInsightsOutput < Output
+  class ApplicationInsightsOutput < Fluent::Output
     Fluent::Plugin.register_output("application_insights", self)
 
     attr_accessor :tc
     # TODO: Attribute helpers?
 
     # TODO: Add descriptions?
+    # The default buffer size is 500, which is pretty large for demoing purpose, add this config so we flush more often
+    config_param :developer_mode, :bool, default: false
     config_param :instrumentation_key, :string
     config_param :standard_schema, :bool, default: false
     config_param :message_property, :string, default: 'message'
@@ -70,6 +71,11 @@ module Fluent
           process_non_standard_schema_log record
         end
       }
+
+      if @developer_mode
+        @tc.flush
+      end
+
       chain.next
     end
 
@@ -256,8 +262,10 @@ module Fluent
 
     def process_non_standard_schema_log(record)
       message = record[@message_property] || record.to_s
+      severity_level = record[@severity_property] ? SEVERITY_LEVEL_MAPPING[record[@severity_property].downcase] : nil
       props = extract_properties(record, [@message_property, @severity_property])
-      @tc.track_trace message, SEVERITY_LEVEL_MAPPING[record[@severity_property].downcase], :properties => props
+
+      @tc.track_trace message, severity_level, :properties => props
     end
 
     def extract_properties(record, excluded_props, prop_prefix = nil)
