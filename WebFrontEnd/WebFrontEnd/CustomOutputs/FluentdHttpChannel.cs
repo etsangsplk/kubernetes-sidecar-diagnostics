@@ -1,4 +1,5 @@
 ﻿using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace WebFrontEnd
             this.EndpointAddress = endpoint;
 
             // append channel name as tag
-            this.requestUri = new Uri(new Uri(this.EndpointAddress), "FlunetdHttpChannel");
+            this.requestUri = new Uri(new Uri(this.EndpointAddress), "ApplicationInsightsHttpChannel");
         }
 
         public bool? DeveloperMode { get; set; }

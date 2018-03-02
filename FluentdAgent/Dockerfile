@@ -36,6 +36,10 @@ COPY ./conf/fluent.conf /fluentd/etc/
 COPY ./plugins/ /fluentd/plugins/
 COPY entrypoint.sh /fluentd/entrypoint.sh
 
+# There are some problems with AI ruby sdk 0.5.3, e.g, can't track dependency, no cloud context. So we tweak the source code and override the file inside the container to make the sidecar work.
+copy ./sdkhack/telemetry_client.rb /var/lib/gems/2.3.0/gems/application_insights-0.5.3/lib/application_insights/telemetry_client.rb
+copy ./sdkhack/remote_dependency_data.rb /var/lib/gems/2.3.0/gems/application_insights-0.5.3/lib/application_insights/channel/contracts/remote_dependency_data.rb
+
 # Environment variables
 ENV FLUENTD_OPT=""
 ENV FLUENTD_CONF="fluent.conf"

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -34,6 +35,10 @@ namespace WebFrontEnd.Controllers
             this.logger.LogWarning("I'm ILogger message in About()...");
 
             ViewData["Message"] = "Your application description page.";
+
+            HttpClient client = new HttpClient();
+            var result = client.GetStringAsync("http://www.google.com").Result;
+            this.client.TrackTrace(result);
 
             return View();
         }

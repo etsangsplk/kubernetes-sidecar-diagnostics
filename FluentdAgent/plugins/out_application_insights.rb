@@ -185,21 +185,28 @@ module Fluent
     def process_request_telemetry(base_data, custom_properties, time)
       # TODO: Validate the parsing of measurements is correct
       http_method = base_data["properties"] ? base_data["properties"]["httpMethod"] : nil
-      options = { :name => base_data["name"], :http_method => http_method, :url => base_data["url"], :properties => custom_properties.merge!(base_data["properties"]), :measurements => base_data["measurements"] }
+      options = {
+        :name => base_data["name"],
+        :http_method => http_method,
+        :url => base_data["url"],
+        :properties => custom_properties.merge!(base_data["properties"]),
+        :measurements => base_data["measurements"]
+      }
       @tc.track_request base_data["id"], time, base_data["duration"], base_data["responseCode"], base_data["success"], options
     end
 
     # TODO: There is no track_dependency in AI sdk, and the remote_dependency_data contract is also very different from the current schema (it's more like metric in the AI ruby sdk).
     def process_dependency_telemetry(base_data, custom_properties)
-      data_attributes = {
-        :id => base_data["id"],
+      options = {
         :name => base_data["name"],
-        :properties => custom_properties.merge!(base_data["properties"]) || {},
-        :measurements => base_data["measurements"] || {}
+        :data => base_data["data"],
+        :target => base_data["target"],
+        :type => base_data["type"],
+        :properties => custom_properties.merge!(base_data["properties"]),
+        :measurements => base_data["measurements"]
       }
-      log.warn "track_dependency is not supported"
-      #data = ApplicationInsights::Channel::Contracts::RemoteDependencyData.new data_attributes
-      #@tc.channel.write(data, @tc.context)
+      
+      @tc.track_dependency base_data["id"], base_data["duration"], base_data["resultCode"], base_data["success"], options
     end
 
     def process_trace_telemetry(base_data, custom_properties)

@@ -87,7 +87,7 @@ module Fluent
             # TODO(yantang): check if the containerID will change if it restarts, or if it's possible the sidecar could fail to get the app container if the app container is slow to initialize
             # Drop the prefix of containerID, the format is docker://080dc8b76e049a2a910899af6238994063ad69e9567f0c20ede95c4d9699a112
             if container['containerID'][9..-1] == @container_id
-            @container_name = container['name']
+              @container_name = container['name']
             end
         end
       end
