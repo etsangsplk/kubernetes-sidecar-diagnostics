@@ -27,6 +27,11 @@ module Fluent
     config_param :developer_mode, :bool, default: false
     config_param :instrumentation_key, :string
     config_param :standard_schema, :bool, default: false
+
+    # TODO: add the support of the context_property.
+    # One useful scenario is the kubernetes_logs input captures some logs in non standard schema, while it's decorated
+    # with the application_insights_cloud_context filter plugin, it get some context thus can be updated.
+    config_param :context_property, :string, default: 'tags'
     config_param :message_property, :string, default: 'message'
     config_param :severity_property, :string, default: 'severity'
 

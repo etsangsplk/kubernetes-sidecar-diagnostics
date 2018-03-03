@@ -43,6 +43,7 @@ namespace WebFrontEnd
             var content = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
 
             client.PostAsync(this.requestUri, new StringContent(content, Encoding.UTF8, "application/json"));
+            Console.WriteLine("Sending telemetry of type " + item.GetType().FullName);
         }
     }
 }
