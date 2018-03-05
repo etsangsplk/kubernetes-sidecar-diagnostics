@@ -131,12 +131,16 @@ module Fluent
     def start
       super
 
-      # TODO: pass the lastest timestamp so it doesn't always read from the start.
-      watcher = @client.watch_pod_log(@pod_name, @namespace_name, container: @container_name)
-      watcher.each do |line|
-        # TODO: is there a way to tell it's from stdout, stderr? The log files has such information
-        router.emit(tag, Fluent::Engine.now, { "log" => line })
-      end
+      thread = Thread.new {
+        # TODO: error handling
+        # TODO: pass the lastest timestamp so it doesn't always read from the start.
+        watcher = @client.watch_pod_log(@pod_name, @namespace_name, container: @container_name)
+        watcher.each do |line|
+          # TODO: is there a way to tell it's from stdout, stderr? The log files has such information
+          router.emit(tag, Fluent::Engine.now, { "log" => line })
+        end
+      }
+      thread.abort_on_exception = true
     end
 
     def shutdown
