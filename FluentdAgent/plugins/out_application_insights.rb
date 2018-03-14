@@ -25,6 +25,8 @@ module Fluent
     # TODO: Add descriptions?
     # The default buffer size is 500, which is pretty large for demoing purpose, add this config so we flush more often
     config_param :developer_mode, :bool, default: false
+    config_param :max_queue_length, :integer, default: 10
+    config_param :send_buffer_size, :integer, default: 5
     config_param :instrumentation_key, :string
     config_param :standard_schema, :bool, default: false
 
@@ -59,6 +61,8 @@ module Fluent
 
       # TODO: async channel or sync channel?
       @tc = ApplicationInsights::TelemetryClient.new @instrumentation_key
+      @tc.channel.queue.max_queue_length = @max_queue_length
+      @tc.channel.sender.send_buffer_size = @send_buffer_size
     end
 
     def shutdown
@@ -104,6 +108,7 @@ module Fluent
 
         case base_type
         when "RequestData"
+          # TODO: the "time" property will be removed by fluentd
           process_request_telemetry base_data, custom_properties, record["time"]
         when "RemoteDependencyData"
           process_dependency_telemetry base_data, custom_properties
@@ -177,6 +182,7 @@ module Fluent
       context.operation.id = tags["ai.operation.id"]
       context.operation.name = tags["ai.operation.name"]
       context.operation.parent_id = tags["ai.operation.parentId"]
+      # TODO: no operation.rootId actually, the definition in the ruby sdk is not up to date
       context.operation.root_id = tags["ai.operation.rootId"]
       context.operation.synthetic_source = tags["ai.operation.syntheticSource"]
       context.operation.is_synthetic = tags["ai.operation.isSynthetic"]
@@ -194,7 +200,7 @@ module Fluent
         :name => base_data["name"],
         :http_method => http_method,
         :url => base_data["url"],
-        :properties => custom_properties.merge!(base_data["properties"]),
+        :properties => custom_properties.merge!(base_data["properties"] || {}),
         :measurements => base_data["measurements"]
       }
       @tc.track_request base_data["id"], time, base_data["duration"], base_data["responseCode"], base_data["success"], options
@@ -207,7 +213,7 @@ module Fluent
         :data => base_data["data"],
         :target => base_data["target"],
         :type => base_data["type"],
-        :properties => custom_properties.merge!(base_data["properties"]),
+        :properties => custom_properties.merge!(base_data["properties"] || {}),
         :measurements => base_data["measurements"]
       }
       
@@ -216,7 +222,7 @@ module Fluent
 
     def process_trace_telemetry(base_data, custom_properties)
       severity_level = base_data["severityLevel"] ? SEVERITY_LEVEL_MAPPING[base_data["severityLevel"].downcase]: nil
-      @tc.track_trace base_data["message"], severity_level, :properties => custom_properties.merge!(base_data["properties"])
+      @tc.track_trace base_data["message"], severity_level, :properties => custom_properties.merge!(base_data["properties"] || {})
     end
 
     def process_exception_telemetry(base_data, custom_properties)
@@ -260,7 +266,7 @@ module Fluent
       data_attributes = {
         :handled_at => handledAt || base_data["handledAt"],
         :exceptions => parsed_exceptions,
-        :properties => custom_properties.merge!(base_data["properties"]) || {},
+        :properties => custom_properties.merge!(base_data["properties"] || {}),
         :measurements => base_data["measurements"] || {},
       }
       data = Channel::Contracts::ExceptionData.new data_attributes
@@ -269,7 +275,7 @@ module Fluent
     end
 
     def process_event_telemetry(base_data, custom_properties)
-      @tc.track_event base_data["name"], { :properties => custom_properties.merge!(base_data["properties"]), :measurements => base_data["measurements"] }
+      @tc.track_event base_data["name"], { :properties => custom_properties.merge!(base_data["properties"] || {}), :measurements => base_data["measurements"] }
     end
 
     def process_non_standard_schema_log(record)
