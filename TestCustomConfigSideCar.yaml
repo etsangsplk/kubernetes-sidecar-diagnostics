@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-custom-config
+data:
+  custom.conf: |
+    <source>
+      @type http
+      port 8887
+    </source>
+
+    <match **>
+      @type stdout
+    </match>
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: testsidecar
+spec:
+  template:
+    metadata:
+      labels:
+        component: testsidecar
+    spec:
+      containers:
+      - name: testhttplog
+        image: yanmingacr.azurecr.io/testhttplog
+      - name: fluentdsidecar
+        image: yanmingacr.azurecr.io/fluentdsidecar
+        env:
+          - name:  SOURCE_CONTAINER_NAME
+            value: "testhttplog"
+          - name: FLUENTD_CUSTOM_CONF
+            value: /fluentd/custom/custom.conf
+        volumeMounts:
+        - name: config-volume
+          mountPath: /fluentd/custom
+
+      volumes:
+      - name: config-volume
+        configMap:
+          name: fluentd-custom-config

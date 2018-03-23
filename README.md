@@ -16,6 +16,10 @@ The are couple yaml files you can easily deploy with
 
   This is for testing purpose, to demonstrate how the sidecar monitor log files of the main application.
 
+* TestCustomConfig
+
+  This is for testing purpose, to demonstrate how to provide a custom config file for the fluentd sidecar.
+
 ## Project Setup
 The images are stored in a private docker registry. To set the project up, you need to use your own images.
 1. Build docker images for the main application and sidecar app

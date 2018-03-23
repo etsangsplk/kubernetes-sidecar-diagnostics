@@ -42,7 +42,6 @@ copy ./sdkhack/remote_dependency_data.rb /var/lib/gems/2.3.0/gems/application_in
 
 # Environment variables
 ENV FLUENTD_OPT=""
-ENV FLUENTD_CONF="fluent.conf"
 
 # jemalloc is memory optimization only available for td-agent
 # td-agent is provided and QA'ed by treasuredata as rpm/deb/.. package
