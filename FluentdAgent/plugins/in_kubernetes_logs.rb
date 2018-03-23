@@ -132,11 +132,15 @@ module Fluent
       super
 
       thread = Thread.new {
+        # TODO: If the source container name is specified incorrectly, it will throw exception response code 400 bad request
         # TODO: error handling
         # TODO: pass the lastest timestamp so it doesn't always read from the start.
         watcher = @client.watch_pod_log(@pod_name, @namespace_name, container: @container_name)
         watcher.each do |line|
           # TODO: is there a way to tell it's from stdout, stderr? The log files has such information
+          # TODO: should the property be "message" instead of log?
+          #       The "log" property is what's used in k8s log files redirected from console,
+          #       The "message" property is like fluentd's default, .e.g, in_tail plugin
           router.emit(tag, Fluent::Engine.now, { "log" => line })
         end
       }

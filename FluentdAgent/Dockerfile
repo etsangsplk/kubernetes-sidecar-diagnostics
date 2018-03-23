@@ -30,7 +30,7 @@ RUN buildDeps="sudo make gcc g++ libc-dev ruby-dev libffi-dev" \
     && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem
 
 # Copy configuration files
-COPY ./conf/fluent.conf /fluentd/etc/
+COPY ./conf/ /fluentd/etc/
 
 # Copy plugins
 COPY ./plugins/ /fluentd/plugins/

@@ -13,7 +13,7 @@ spec:
       - name: webfrontend
         image: yanmingacr.azurecr.io/webfrontend
       - name: fluentdsidecar
-        image: yanmingacr.azurecr.io/fluentai
+        image: yanmingacr.azurecr.io/fluentdsidecar
         env:
           - name:  SOURCE_CONTAINER_NAME
             value: "webfrontend"

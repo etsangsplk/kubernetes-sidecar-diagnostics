@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: testsidecar
+spec:
+  template:
+    metadata:
+      labels:
+        component: testsidecar
+    spec:
+      containers:
+      - name: testfilelog
+        image: debian
+        command: ["/bin/sh"]
+        args: ["-c", "while [ true ]; do date >> /var/logfolder/testfilelog.txt; sleep 1; done"]
+        volumeMounts:
+        - name: logfolder
+          mountPath: /var/logfolder
+      - name: fluentdsidecar
+        image: yanmingacr.azurecr.io/fluentdsidecar
+        env:
+          - name:  SOURCE_CONTAINER_NAME
+            value: "testfilelog"
+          - name:  INSTRUMENTATION_KEY
+            value: "014dae06-98b6-4fb9-9fa4-abd84d067e9c"
+            # File path is string, can specify multiple file path separated by comma. If there is * in the file path, it will be expanded as glob pattern
+          - name:  LOG_FILE_PATH
+            value: /var/logfolder/*
+            # Exclude path is an array, and it's optional
+          - name:  LOG_FILE_EXCLUDE_PATH
+            value: "[]"
+        volumeMounts:
+        - name: logfolder
+          mountPath: /var/logfolder
+
+      volumes:
+      - name: logfolder
+        emptyDir: {}
