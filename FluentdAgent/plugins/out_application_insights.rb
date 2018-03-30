@@ -13,31 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+require 'fluent/plugin/output'
 require "application_insights"
 
 module Fluent
-  class ApplicationInsightsOutput < Fluent::Output
+  class ApplicationInsightsOutput < Output
     Fluent::Plugin.register_output("application_insights", self)
 
     attr_accessor :tc
-    # TODO: Attribute helpers?
 
-    # TODO: Add descriptions?
-    # The default buffer size is 500, which is pretty large for demoing purpose, add this config so we flush more often
-    config_param :developer_mode, :bool, default: false
-    config_param :max_queue_length, :integer, default: 10
-    config_param :send_buffer_size, :integer, default: 5
+    # The application insights instrumentation key
     config_param :instrumentation_key, :string
+    # The batch size to send data to application insights service.
+    config_param :send_buffer_size, :integer, default: 1000
+    # The parameter indication whether the record is in standard schema. i.e., the format that can be 
     config_param :standard_schema, :bool, default: false
-
+    # The property name for the message. It will be ignored the record is in standard schema.
+    config_param :message_property, :string, default: 'message'
+    # The property name for severity level. It will be ignored the record is in standard schema.
+    config_param :severity_property, :string, default: 'severity'
     # TODO: add the support of the context_property.
     # One useful scenario is the kubernetes_logs input captures some logs in non standard schema, while it's decorated
     # with the application_insights_cloud_context filter plugin, it get some context thus can be updated.
-    config_param :context_property, :string, default: 'tags'
-    config_param :message_property, :string, default: 'message'
-    config_param :severity_property, :string, default: 'severity'
+    # config_param :cloud_role_name_property, :string, default: 'kubernetes.container_name'
+    # config_param :cloud_role_instance_property, :string, default: 'kubernetes.pod_name'
 
-    # If we don't flatten the props, it will become [object Object] in AI telemetry
+    # The parameter indicating whether flatten the property if it's an object or array.
+    # If it's not flattened, the value will become [object Object] in the final telemetry.
+    # The property name will be concatenated by '_' if it's flattened.
     config_param :flatten_properties, :bool, default: true
 
     SEVERITY_LEVEL_MAPPING = {
@@ -50,29 +53,37 @@ module Fluent
 
     STANDARD_SCHEMA_PROPS = ["name", "time", "iKey", "tags", "data"]
 
-    def configure(conf)
-      super
-
-      log.info "AI_ Configure: "  + @instrumentation_key
-    end
-
     def start
       super
 
-      # TODO: async channel or sync channel?
-      @tc = ApplicationInsights::TelemetryClient.new @instrumentation_key
-      @tc.channel.queue.max_queue_length = @max_queue_length
-      @tc.channel.sender.send_buffer_size = @send_buffer_size
+      sender = ApplicationInsights::Channel::AsynchronousSender.new
+      queue = ApplicationInsights::Channel::AsynchronousQueue.new sender
+      channel = ApplicationInsights::Channel::TelemetryChannel.new nil, queue
+      @tc = ApplicationInsights::TelemetryClient.new @instrumentation_key, channel
+      @tc.channel.queue.max_queue_length = @send_buffer_size
+      tc.channel.sender.send_buffer_size = @send_buffer_size
     end
 
     def shutdown
-        super
+      super
 
-        log.info "Shutting down application_insights output"
-        @tc.flush
+      # Draining the events in the queue.
+      # We need to make sure the work thread has finished. Otherwise, it's possible the queue is empty, but the http request to send the data is not finished.
+      # However, a drawback of waiting the work thread to finish is even the events has been drained, it will still poll the queue for some time (default is 3 seconds, set by sender.send_time).
+      # This can be improved if the SDK exposes another variable indicating whether the work thread is sending data or just polling the queue.
+      while !tc.channel.queue.empty? || tc.channel.sender.work_thread != nil
+        # It's possible the work thread has already exited but there are still items in the queue.
+        # https://github.com/Microsoft/ApplicationInsights-Ruby/blob/master/lib/application_insights/channel/asynchronous_sender.rb#L115
+        # Trigger flush to make the work thread working again in this case.
+        if tc.channel.sender.work_thread == nil && !tc.channel.queue.empty?
+          tc.flush
+        end
+
+        sleep(1)
+      end
     end
 
-    def emit(tag, es, chain)
+    def process(tag, es)
       es.each { |time, record|
         if @standard_schema
           process_standard_schema_log record
@@ -80,12 +91,6 @@ module Fluent
           process_non_standard_schema_log record
         end
       }
-
-      if @developer_mode
-        @tc.flush
-      end
-
-      chain.next
     end
 
     private
