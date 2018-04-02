@@ -100,8 +100,8 @@ module Fluent
         end
       end
 
-      if !record["tags"]["ai.cloud.roleName"] || @override
-        record["tags"]["ai.cloud.roleName"] = @role_name
+      if !record["tags"]["ai.cloud.role"] || @override
+        record["tags"]["ai.cloud.role"] = @role_name
       end
     end
 
