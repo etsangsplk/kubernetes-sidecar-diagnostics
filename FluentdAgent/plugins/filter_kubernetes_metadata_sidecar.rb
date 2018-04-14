@@ -223,6 +223,7 @@ module Fluent
     end
 
     def initialize_namespace_name
+      # TODO: validate namespace_name. If an invalid namespace is provided get_pod will return something and become harder to debug
       if @namespace_name.nil?
         namespace_file = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
         if (!File.exist?(namespace_file))

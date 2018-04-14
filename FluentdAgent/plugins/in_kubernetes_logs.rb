@@ -1,7 +1,8 @@
+require 'fluent/plugin/input'
 require 'kubeclient'
 
-module Fluent
-  class KubernetesLogsInput < Fluent::Input
+module Fluent::Plugin
+  class KubernetesLogsInput < Input
     Fluent::Plugin.register_input('kubernetes_logs', self)
     K8_POD_CA_CERT = 'ca.crt'
     K8_POD_TOKEN = 'token'
