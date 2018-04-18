@@ -250,6 +250,7 @@ module Fluent
 
       @client.get_pods(namespace: @namespace_name).each do |pod|
         pod['status']['containerStatuses'].each do |container|
+          # TODO: container['containerID'] can be nil (e.g., wrong namespace name, sidecar container started first). May also happen for other places, need careful nil checking.
           if container['containerID'].end_with? container_id
             return pod
           end
