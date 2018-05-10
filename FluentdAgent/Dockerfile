@@ -16,7 +16,7 @@ RUN buildDeps="sudo make gcc g++ libc-dev ruby-dev libffi-dev" \
     && gem install fluent-plugin-kubernetes_metadata_filter \
     && gem install fluent-plugin-application-insights \
     && gem install ffi \
-    && gem install fluent-plugin-systemd -v 0.0.8 \
+    && gem install fluent-plugin-systemd \
     && SUDO_FORCE_REMOVE=yes \
     apt-get purge -y --auto-remove \
                   -o APT::AutoRemove::RecommendsImportant=false \

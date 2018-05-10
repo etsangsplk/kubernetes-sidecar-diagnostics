@@ -126,7 +126,6 @@ module Fluent
         level == Fluent::Log::LEVEL_TRACE
       end
 
-      # TODO(yantang): Generate Gem and add dependendies, currently it relies on the kubernetes_metadata filter to install dependencies
       require 'kubeclient'
       require 'active_support/core_ext/object/blank'
       require 'lru_redux'
@@ -209,10 +208,16 @@ module Fluent
         end
       end
 
-      initialize_namespace_name
+      # # NOTE: cgroup file is not reliable, pass it through downward API only
+      # initialize_namespace_name
+      # pod = get_pod
+      # @pod_name = pod['metadata']['name']
 
-      pod = get_pod
-      @pod_name = pod['metadata']['name']
+      if !@namespace_name || !@pod_name
+        raise Fluent::ConfigError, "namespace_name and pod_name can't be nil. You can pass it through downwardAPI"
+      end
+
+      pod = @client.get_pod(@pod_name, @namespace_name)
       pod['status']['containerStatuses'].each do |container|
         if container['name'] == @source_container_name
           # TODO(yantang): check if the containerID will change if it restarts, or if it's possible the sidecar could fail to get the app container if the app container is slow to initialize
@@ -222,41 +227,44 @@ module Fluent
       end
     end
 
-    def initialize_namespace_name
-      # TODO: validate namespace_name. If an invalid namespace is provided get_pod will return something and become harder to debug
-      if @namespace_name.nil?
-        namespace_file = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
-        if (!File.exist?(namespace_file))
-          raise Fluent::ConfigError, "File #{namespace_file} does not exist. Failed to get namespace name."
-        end
+    # # NOTE: the cgroup file is not reliable (doesn't exist on windows and format can be changed. We have seen it get changed at least 2 times)
+    # def initialize_namespace_name
+    #   # TODO: validate namespace_name. If an invalid namespace is provided get_pod will return something and become harder to debug
+    #   if @namespace_name.nil?
+    #     namespace_file = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
+    #     if (!File.exist?(namespace_file))
+    #       raise Fluent::ConfigError, "File #{namespace_file} does not exist. Failed to get namespace name."
+    #     end
 
-        @namespace_name = File.read(namespace_file);
-      end
-    end
+    #     @namespace_name = File.read(namespace_file);
+    #   end
+    # end
 
-    def get_pod
-      # cgroup format is something like: 11:cpuset:/docker/9eff9fc8c340f764725c3cee6d011a2d71c85fe456210d6683c01dff2880b110
-      container_id_regexp = ".+/docker/(?<container_id>[^/]*)$"
-      container_id_regexp_compiled = Regexp.compile(container_id_regexp)
-      cgroup_file = '/proc/self/cgroup'
-      cgroup_file_content = File.read(cgroup_file);
-      match_data = cgroup_file_content.match(container_id_regexp_compiled)
+    # def get_pod
+    #   # cgroup format is something like: 11:cpuset:/docker/9eff9fc8c340f764725c3cee6d011a2d71c85fe456210d6683c01dff2880b110
+    #   container_id_regexp = ".+/docker/(?<container_id>[^/]*)$"
+    #   container_id_regexp_compiled = Regexp.compile(container_id_regexp)
+    #   cgroup_file = '/proc/self/cgroup'
+    #   cgroup_file_content = File.read(cgroup_file);
+    #   match_data = cgroup_file_content.match(container_id_regexp_compiled)
 
-      if match_data
-        container_id = match_data['container_id']
-      else
-        raise Fluent::ConfigError, "Failed to match container id in file #{cgroup_file} with regex #{container_id_regexp}"
-      end
+    #   if match_data
+    #     container_id = match_data['container_id']
+    #   else
+    #     raise Fluent::ConfigError, "Failed to match container id in file #{cgroup_file} with regex #{container_id_regexp}"
+    #   end
 
-      @client.get_pods(namespace: @namespace_name).each do |pod|
-        pod['status']['containerStatuses'].each do |container|
-          # TODO: container['containerID'] can be nil (e.g., wrong namespace name, sidecar container started first). May also happen for other places, need careful nil checking.
-          if container['containerID'].end_with? container_id
-            return pod
-          end
-        end
-      end
-    end
+    #   @client.get_pods(namespace: @namespace_name).each do |pod|
+    #     pod['status']['containerStatuses'].each do |container|
+    #       # TODO: container['containerID'] can be nil (e.g., wrong namespace name, sidecar container started first). May also happen for other places, need careful nil checking.
+    #       if container['containerID'].end_with? container_id
+    #         return pod
+    #       end
+    #     end
+    #   end
+
+    #   return nil
+    # end
 
     def get_metadata_for_record
       metadata = {
