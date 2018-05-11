@@ -34,6 +34,7 @@ COPY entrypoint.sh /fluentd/entrypoint.sh
 
 # Environment variables
 ENV FLUENTD_OPT=""
+ENV FLUENT_UID=0
 
 # jemalloc is memory optimization only available for td-agent
 # td-agent is provided and QA'ed by treasuredata as rpm/deb/.. package
