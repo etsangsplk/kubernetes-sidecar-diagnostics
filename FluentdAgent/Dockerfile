@@ -32,9 +32,10 @@ RUN gem install /fluentd/fluent-plugin-kubernetes_metadata_filter-2.1.2.gem
 COPY ./conf/ /fluentd/etc/
 
 # Environment variables
-ENV FLUENTD_OPT=""
 ENV FLUENT_UID=0
+ENV FLUENTD_OPT=""
 ENV APP_INSIGHTS_HTTP_CHANNEL_PORT=8887
+ENV TAIL_INPUT_POS_FILE_DIR="/var/log"
 
 # Run Fluentd
 COPY entrypoint.sh /fluentd/entrypoint.sh

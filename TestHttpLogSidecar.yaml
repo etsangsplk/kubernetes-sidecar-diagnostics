@@ -26,10 +26,4 @@ spec:
                 fieldPath: metadata.name
           - name: SOURCE_CONTAINER_NAME
             value: "testhttplog"
-# TODO: fix the bug when there is no volume mount, the file input plugin complains that it failed to write the position file
-        volumeMounts:
-        - name: emptydir
-          mountPath: /var/fluentdsidecar
-      volumes:
-      - name: emptydir
-        emptyDir: {}
+
