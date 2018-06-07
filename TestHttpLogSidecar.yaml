@@ -14,16 +14,22 @@ spec:
       - name: fluentdsidecar
         image: yanmingacr.azurecr.io/fluentdsidecar
         env:
-          - name:  SOURCE_CONTAINER_NAME
-            value: "testhttplog"
           - name:  INSTRUMENTATION_KEY
             value: "014dae06-98b6-4fb9-9fa4-abd84d067e9c"
-          # TODO(yantang): Minor: If we can auto generate the sidecar container definition, consider allowing passing the metadata directly through kubernetes downward api
-          # - name: POD_NAME
-          #   valueFrom:
-          #     fieldRef:
-          #       fieldPath: metadata.name
-          # - name: NAMESPACE_NAME
-          #   valueFrom:
-          #     fieldRef:
-          #       fieldPath: metadata.namespace
+          - name: NAMESPACE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: SOURCE_CONTAINER_NAME
+            value: "testhttplog"
+# TODO: fix the bug when there is no volume mount, the file input plugin complains that it failed to write the position file
+        volumeMounts:
+        - name: emptydir
+          mountPath: /var/fluentdsidecar
+      volumes:
+      - name: emptydir
+        emptyDir: {}

@@ -1,6 +1,6 @@
 FROM fluent/fluentd:v1.1.2-debian
 
-MAINTAINER Azure Diagnostics <azdiag@microsoft.com>
+MAINTAINER Azure Diagnostics Tooling Core <ctdiagcore@microsoft.com>
 USER root
 
 RUN buildDeps="sudo make gcc g++ libc-dev ruby-dev libffi-dev" \
@@ -11,7 +11,6 @@ RUN buildDeps="sudo make gcc g++ libc-dev ruby-dev libffi-dev" \
      $buildDeps \
     && echo 'gem: --no-document' >> /etc/gemrc \
     && gem install fluent-plugin-secure-forward \
-    && gem install fluent-plugin-record-reformer \
     # && gem install fluent-plugin-kubernetes_metadata_filter \
     && gem install fluent-plugin-application-insights \
     && gem install ffi \
@@ -25,22 +24,18 @@ RUN buildDeps="sudo make gcc g++ libc-dev ruby-dev libffi-dev" \
     # && gem sources --clear-all \
     # && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem
 
+# Change to the official ruby gem once the PR is merged (https://github.com/fabric8io/fluent-plugin-kubernetes_metadata_filter/pull/133)
 copy ./fluent-plugin-kubernetes_metadata_filter-2.1.2.gem /fluentd/fluent-plugin-kubernetes_metadata_filter-2.1.2.gem
 RUN gem install /fluentd/fluent-plugin-kubernetes_metadata_filter-2.1.2.gem
 
 # Copy configuration files
 COPY ./conf/ /fluentd/etc/
 
-COPY entrypoint.sh /fluentd/entrypoint.sh
-
 # Environment variables
 ENV FLUENTD_OPT=""
 ENV FLUENT_UID=0
-
-# jemalloc is memory optimization only available for td-agent
-# td-agent is provided and QA'ed by treasuredata as rpm/deb/.. package
-# -> td-agent (stable) vs fluentd (edge)
-#ENV LD_PRELOAD="/usr/lib/libjemalloc.so.2"
+ENV APP_INSIGHTS_HTTP_CHANNEL_PORT=8887
 
 # Run Fluentd
+COPY entrypoint.sh /fluentd/entrypoint.sh
 CMD ["/fluentd/entrypoint.sh"]

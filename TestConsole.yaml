@@ -17,18 +17,18 @@ spec:
       - name: fluentdsidecar
         image: yanmingacr.azurecr.io/fluentdsidecar
         env:
-          - name: SOURCE_CONTAINER_NAME
-            value: "count"
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
+          - name:  INSTRUMENTATION_KEY
+            value: "58e1168f-62bc-4eaf-b546-d1d501190bac"
           - name: NAMESPACE_NAME
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name:  INSTRUMENTATION_KEY
-            value: "58e1168f-62bc-4eaf-b546-d1d501190bac"
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: SOURCE_CONTAINER_NAME
+            value: "count"
         volumeMounts:
         - name: varlog
           mountPath: /var/log
