@@ -15,6 +15,10 @@ if [[ -z ${FLUENTD_CUSTOM_CONF} ]]; then
         sed -i  '/@include file.conf/d' /fluentd/etc/fluent.conf
     fi
 
+    if [[ ${SEND_SIDECAR_LOG} == false ]]; then
+        sed -i '/@include sidecar.conf/d' /fluentd/etc/fluent.conf
+    fi
+
     exec fluentd -c /fluentd/etc/fluent.conf -p /fluentd/plugins ${FLUENTD_OPT}
 else
     exec fluentd -c ${FLUENTD_CUSTOM_CONF} -p /fluentd/plugins ${FLUENTD_OPT}

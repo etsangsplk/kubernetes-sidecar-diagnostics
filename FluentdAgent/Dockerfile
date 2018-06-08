@@ -36,6 +36,8 @@ ENV FLUENT_UID=0
 ENV FLUENTD_OPT=""
 ENV APP_INSIGHTS_HTTP_CHANNEL_PORT=8887
 ENV TAIL_INPUT_POS_FILE_DIR="/var/log"
+ENV SEND_SIDECAR_LOG=false
+ENV SIDECAR_CONTAINER_NAME="fluentdsidecar"
 
 # Run Fluentd
 COPY entrypoint.sh /fluentd/entrypoint.sh

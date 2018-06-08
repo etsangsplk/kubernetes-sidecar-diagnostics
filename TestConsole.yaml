@@ -29,6 +29,10 @@ spec:
                 fieldPath: metadata.name
           - name: SOURCE_CONTAINER_NAME
             value: "count"
+          - name: SEND_SIDECAR_LOG
+            value: "false"
+          - name: FLUENTD_OPT
+            value: "-v"
         volumeMounts:
         - name: varlog
           mountPath: /var/log
