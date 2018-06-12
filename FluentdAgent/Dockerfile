@@ -25,7 +25,7 @@ RUN buildDeps="sudo make gcc g++ libc-dev ruby-dev libffi-dev" \
     # && rm -rf /tmp/* /var/tmp/* /usr/lib/ruby/gems/*/cache/*.gem
 
 # Change to the official ruby gem once the PR is merged (https://github.com/fabric8io/fluent-plugin-kubernetes_metadata_filter/pull/133)
-copy ./fluent-plugin-kubernetes_metadata_filter-2.1.2.gem /fluentd/fluent-plugin-kubernetes_metadata_filter-2.1.2.gem
+COPY ./fluent-plugin-kubernetes_metadata_filter-2.1.2.gem /fluentd/fluent-plugin-kubernetes_metadata_filter-2.1.2.gem
 RUN gem install /fluentd/fluent-plugin-kubernetes_metadata_filter-2.1.2.gem
 
 # Copy configuration files
