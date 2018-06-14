@@ -15,7 +15,10 @@ spec:
         args: [/bin/sh, -c,
 '
 rate=2000;
-while true;
+lifetime=-1;
+
+j=0;
+while [ ${j} -ne ${lifetime} ];
 do
   i=0;
   while [ ${i} -lt ${rate} ];
@@ -24,6 +27,7 @@ do
     i=$((i+1));
   done;
   sleep 1;
+  j=$((j+1));
 done
 ']
       - name: fluentdsidecar

@@ -19,20 +19,29 @@ spec:
       - name: fluentdsidecar
         image: yanmingacr.azurecr.io/fluentdsidecar
         env:
-          - name:  SOURCE_CONTAINER_NAME
-            value: "testfilelog"
           - name:  INSTRUMENTATION_KEY
             value: "014dae06-98b6-4fb9-9fa4-abd84d067e9c"
+          - name: NAMESPACE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name:  SOURCE_CONTAINER_NAME
+            value: "testfilelog"
             # File path is string, can specify multiple file path separated by comma. If there is * in the file path, it will be expanded as glob pattern
           - name:  LOG_FILE_PATH
             value: /var/logfolder/*
             # Exclude path is an array, and it's optional
           - name:  LOG_FILE_EXCLUDE_PATH
             value: "[]"
+          - name: TAIL_INPUT_POS_FILE_DIR
+            value: "/var/logfolder"
         volumeMounts:
         - name: logfolder
           mountPath: /var/logfolder
-
       volumes:
       - name: logfolder
         emptyDir: {}
