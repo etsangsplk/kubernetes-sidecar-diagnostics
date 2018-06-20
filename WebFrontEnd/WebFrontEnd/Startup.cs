@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -50,9 +51,7 @@ namespace WebFrontEnd
             });
 
             var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
-            config.TelemetryChannel = new FluentdHttpChannel("http://localhost:8887");
-            config.DefaultTelemetrySink.Name = "yanming";
-            config.DefaultTelemetrySink.TelemetryChannel = new FluentdHttpChannel();
+            config.TelemetryChannel = new HttpChannel("http://localhost:8887/abc");
         }
     }
 }

@@ -36,7 +36,7 @@ namespace WebFrontEnd
                 .ConfigureLogging((hostingContext, logging) =>
                 {
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddHttp("http://localhost:8887");
+                    //logging.AddHttp("http://localhost:8887");
                 })
                 .UseApplicationInsights()
                 .Build();
