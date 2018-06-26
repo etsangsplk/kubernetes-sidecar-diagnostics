@@ -20,7 +20,7 @@ namespace TestHttpLog
                     dict["count"] = count++;
                     dict["stringValue"] = "message" + count;
                     dict["boolValue"] = (new Random()).Next() % 2 == 0 ? true : false;
-                    var content = JsonConvert.SerializeObject(dict, Formatting.Indented);
+                    var content = JsonConvert.SerializeObject(dict, Formatting.None);
 
                     client.PostAsync(endpoint + "/sometag", new StringContent(content, Encoding.UTF8, "application/json"));
                     Console.WriteLine("Console Message: " + content);

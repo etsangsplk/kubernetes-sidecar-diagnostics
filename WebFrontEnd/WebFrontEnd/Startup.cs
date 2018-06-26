@@ -51,7 +51,7 @@ namespace WebFrontEnd
             });
 
             var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
-            config.TelemetryChannel = new HttpChannel("http://localhost:8887/abc");
+            config.TelemetryChannel.EndpointAddress = "http://localhost:8887/abc";
         }
     }
 }
