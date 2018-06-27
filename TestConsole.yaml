@@ -33,7 +33,7 @@ done
       - name: fluentdsidecar
         image: yanmingacr.azurecr.io/fluentdsidecar
         env:
-          - name:  INSTRUMENTATION_KEY
+          - name:  APPINSIGHTS_INSTRUMENTATIONKEY
             value: "58e1168f-62bc-4eaf-b546-d1d501190bac"
           - name: NAMESPACE_NAME
             valueFrom:

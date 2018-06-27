@@ -15,7 +15,7 @@ spec:
       - name: fluentdsidecar
         image: yanmingacr.azurecr.io/fluentdsidecar
         env:
-          - name:  INSTRUMENTATION_KEY
+          - name:  APPINSIGHTS_INSTRUMENTATIONKEY
             value: "014dae06-98b6-4fb9-9fa4-abd84d067e9c"
           - name: NAMESPACE_NAME
             valueFrom:

@@ -32,14 +32,14 @@ If you have modified the yaml file and deploy.cmd file to your registry accordin
 ## Fluentd Sidecar Configurations
 The fluentd sidecar is intended to enrich the logs with kubernetes metadata and forward to the Application Insights. Add the following snippet to the yaml file, update the configurations and that's it.
 * `image` The sidecar docker image (TODO: this will be removed when we have a public one)
-* `instrumentation_key` The instrumentation key of Application Insights
+* `APPINSIGHTS_INSTRUMENTATIONKEY` The instrumentation key of Application Insights
 * `source_container_name` The container name of the main application.
 
 ``` yaml
 - name: fluentdsidecar
   image: <image>
   env:
-    - name:  INSTRUMENTATION_KEY
+    - name:  APPINSIGHTS_INSTRUMENTATIONKEY
       value: <instrumentation_key>
     - name: NAMESPACE_NAME
       valueFrom:
@@ -60,7 +60,7 @@ The sidecar image has three sources of inputs:
 
 The reason of adding the http plugin is that you can hide some automatically generated logs, network traffic for example. And get the logs you're really interested in from console with no latency. If you want custom plugins, simply build new images based on this one, add the plugins you want and provide your custom config. And here is the full list of options of this sidecar, you can specify them through the envrionment variables:
 
-* `INSTRUMENTATION_KEY` - Required. The instrumentation key of the Application Insights.
+* `APPINSIGHTS_INSTRUMENTATIONKEY` - Required. The instrumentation key of the Application Insights.
 * `NAMESPACE_NAME` - The name space name where the application runs in. You can pass it through the [downward API](https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api).
 * `POD_NAME` - The pod name where the application run in. You can pass it through the [downward API](https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/#the-downward-api).
 * `SOURCE_CONTAINER_NAME` The container name of the main application. Unfortunately, this option can't be parameterized in yaml unless you using tools like [Helm](https://helm.sh/). So make sure it is set correctly, otherwise you will get unexpected result.
